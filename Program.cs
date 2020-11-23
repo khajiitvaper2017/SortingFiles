@@ -2,30 +2,22 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Diagnostics;
 
 namespace SortingFiles
 {
     internal class Program
     {
+        private static readonly string curDir = Environment.CurrentDirectory;
+        private static readonly string curProcess = Process.GetCurrentProcess().MainModule.FileName;
+
         private static void Main()
         {
-            string curDir = Environment.CurrentDirectory;
-            string curProcess = Process.GetCurrentProcess().MainModule.FileName;
-            var files = Directory.GetFiles(curDir);
-            List<string> filesWOLinks = new List<string>();
-            foreach (var file in files)
-            {
-                if (file.Split('.').Last() != "url" &&
-                    file.Split('.').Last() != "lnk")
-                {
-                    filesWOLinks.Add(file);
-                }
-            }
+            List<string> filesWOLinks = (from string file in Directory.GetFiles(curDir)
+                                         where file.Split('.').Last() != "url" && file.Split('.').Last() != "lnk"
+                                         select file).ToList();
             List<string> extensions = new List<string>();
-            foreach (var file in filesWOLinks)
+            foreach (string file in filesWOLinks)
             {
                 if (file != curProcess &&
                     file.Split('.').Length > 1 &&
@@ -34,7 +26,7 @@ namespace SortingFiles
                     extensions.Add(file.Split('.').Last());
                 }
             }
-            foreach (var ext in extensions)
+            foreach (string ext in extensions)
             {
                 if (!Directory.Exists(curDir + "\\" + ext))
                 {
@@ -42,7 +34,7 @@ namespace SortingFiles
                     Directory.CreateDirectory(curDir + "\\_SortedFiles\\" + ext);
                 }
             }
-            foreach (var file in filesWOLinks)
+            foreach (string file in filesWOLinks)
             {
                 if (file != curProcess &&
                     file.Split('.').Length > 1)
@@ -50,7 +42,7 @@ namespace SortingFiles
                     try
                     {
                         Console.WriteLine($"Moving {file}");
-                        File.Move(file, curDir + "\\_SortedFiles\\" + file.Split('.').Last() + "\\" + file.Split('\\').Last());
+                        File.Move(file, destFileName: $"{curDir}\\_SortedFiles\\{file.Split('.').Last()}\\{file.Split('\\').Last()}");
                     }
                     catch (Exception)
                     {
