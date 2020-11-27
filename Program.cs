@@ -1,55 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Diagnostics;
 
 namespace SortingFiles
 {
     internal class Program
     {
-        private static readonly string curDir = Environment.CurrentDirectory;
-        private static readonly string curProcess = Process.GetCurrentProcess().MainModule.FileName;
+        private static readonly string CurDir = Environment.CurrentDirectory;
+        private static readonly string CurProcess = Process.GetCurrentProcess().MainModule?.FileName;
 
         private static void Main()
         {
-            List<string> filesWOLinks = (from string file in Directory.GetFiles(curDir)
-                                         where file.Split('.').Last() != "url" && file.Split('.').Last() != "lnk"
-                                         select file).ToList();
-            List<string> extensions = new List<string>();
-            foreach (string file in filesWOLinks)
+            var filesWoLinks = (from string file in Directory.GetFiles(CurDir)
+                where file.Split('.').Last() != "url" && file.Split('.').Last() != "lnk"
+                select file).ToList();
+
+            var extensions = new List<string>();
+
+            foreach (var file in filesWoLinks.Where(file => file != CurProcess && file.Split('.').Length > 1 && !extensions.Contains(file.Split('.').Last())))
+                extensions.Add(file.Split('.').Last());
+            foreach (var ext in extensions.Where(ext => !Directory.Exists(CurDir + "\\" + ext)))
             {
-                if (file != curProcess &&
-                    file.Split('.').Length > 1 &&
-                    !extensions.Contains(file.Split('.').Last()))
-                {
-                    extensions.Add(file.Split('.').Last());
-                }
+                Console.WriteLine($"Creating {ext} directory");
+                Directory.CreateDirectory(CurDir + "\\_SortedFiles\\" + ext);
             }
-            foreach (string ext in extensions)
-            {
-                if (!Directory.Exists(curDir + "\\" + ext))
+
+            foreach (var file in filesWoLinks.Where(file => file != CurProcess && file.Split('.').Length > 1))
+                try
                 {
-                    Console.WriteLine($"Creating {ext} directory");
-                    Directory.CreateDirectory(curDir + "\\_SortedFiles\\" + ext);
+                    Console.WriteLine($"Moving {file}");
+                    File.Move(file, $"{CurDir}\\_SortedFiles\\{file.Split('.').Last()}\\{file.Split('\\').Last()}");
                 }
-            }
-            foreach (string file in filesWOLinks)
-            {
-                if (file != curProcess &&
-                    file.Split('.').Length > 1)
+                catch (Exception)
                 {
-                    try
-                    {
-                        Console.WriteLine($"Moving {file}");
-                        File.Move(file, destFileName: $"{curDir}\\_SortedFiles\\{file.Split('.').Last()}\\{file.Split('\\').Last()}");
-                    }
-                    catch (Exception)
-                    {
-                        Console.WriteLine("File exists");
-                    }
+                    Console.WriteLine("File exists");
                 }
-            }
         }
     }
 }
