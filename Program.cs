@@ -10,6 +10,8 @@ namespace SortingFiles
     {
         private static readonly string CurDir = Environment.CurrentDirectory;
         private static readonly string CurProcess = Process.GetCurrentProcess().MainModule?.FileName;
+        private const string SortDir = "\\_SortedFiles\\";
+
 
         private static void Main()
         {
@@ -19,19 +21,21 @@ namespace SortingFiles
 
             var extensions = new List<string>();
 
-            foreach (var file in filesWoLinks.Where(file => file != CurProcess && file.Split('.').Length > 1 && !extensions.Contains(file.Split('.').Last())))
+            foreach (var file in filesWoLinks.Where(file =>
+                file != CurProcess && file.Split('.').Length > 1 && !extensions.Contains(file.Split('.').Last())))
                 extensions.Add(file.Split('.').Last());
-            foreach (var ext in extensions.Where(ext => !Directory.Exists(CurDir + "\\_SortedFiles\\" + ext)))
+            foreach (var ext in extensions.Where(ext => !Directory.Exists(CurDir + SortDir + ext)))
             {
                 Console.WriteLine($"Creating {ext} directory");
-                Directory.CreateDirectory(CurDir + "\\_SortedFiles\\" + ext);
+                Directory.CreateDirectory(CurDir + SortDir + ext);
             }
 
             foreach (var file in filesWoLinks.Where(file => file != CurProcess && file.Split('.').Length > 1))
                 try
                 {
                     Console.WriteLine($"Moving {file}");
-                    File.Move(file, $"{CurDir}\\_SortedFiles\\{file.Split('.').Last()}\\{file.Split('\\').Last()}");
+                    File.Move(file,
+                        $"{CurDir}" + SortDir + $"{file.Split('.').Last()}\\{file.Split('\\').Last()}");
                 }
                 catch (Exception e)
                 {
