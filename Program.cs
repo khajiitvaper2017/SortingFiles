@@ -21,7 +21,7 @@ namespace SortingFiles
 
             foreach (var file in filesWoLinks.Where(file => file != CurProcess && file.Split('.').Length > 1 && !extensions.Contains(file.Split('.').Last())))
                 extensions.Add(file.Split('.').Last());
-            foreach (var ext in extensions.Where(ext => !Directory.Exists(CurDir + "\\" + ext)))
+            foreach (var ext in extensions.Where(ext => !Directory.Exists(CurDir + "\\_SortedFiles\\" + ext)))
             {
                 Console.WriteLine($"Creating {ext} directory");
                 Directory.CreateDirectory(CurDir + "\\_SortedFiles\\" + ext);
@@ -33,9 +33,9 @@ namespace SortingFiles
                     Console.WriteLine($"Moving {file}");
                     File.Move(file, $"{CurDir}\\_SortedFiles\\{file.Split('.').Last()}\\{file.Split('\\').Last()}");
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    Console.WriteLine("File exists");
+                    Console.WriteLine(e);
                 }
         }
     }
